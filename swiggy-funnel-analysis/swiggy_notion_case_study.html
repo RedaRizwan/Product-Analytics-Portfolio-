@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swiggy Checkout Funnel — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f3;
+  --bg3: #eeecea;
+  --bg-info: #e6f1fb;
+  --bg-success: #e1f5ee;
+  --bg-danger: #fcebeb;
+  --bg-warning: #faeeda;
+  --text: #1a1a18;
+  --text2: #6b6b67;
+  --text3: #9b9b96;
+  --text-danger: #a32d2d;
+  --text-success: #0f6e56;
+  --text-warning: #854f0b;
+  --text-info: #185fa5;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.18);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --green: #1D9E75;
+  --amber: #BA7517;
+  --red: #E24B4A;
+  --coral: #D85A30;
+  --blue: #378ADD;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 48px 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ── HEADER ── */
+.cs-header {
+  border-bottom: 2px solid var(--text);
+  padding-bottom: 1rem;
+  margin-bottom: 2.5rem;
+}
+.eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: .4rem;
+}
+.cs-title {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: .6rem;
+}
+.cs-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 12px;
+  color: var(--text2);
+  flex-wrap: wrap;
+}
+
+/* ── SECTION ── */
+.section { margin-bottom: 2.5rem; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: .7rem;
+  padding-bottom: .35rem;
+  border-bottom: 0.5px solid var(--border);
+}
+
+/* ── OBJECTIVE ── */
+.objective-box {
+  background: var(--bg2);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--text);
+  padding: 1rem 1.2rem;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── FUNNEL BARS ── */
+.funnel-stages { display: flex; flex-direction: column; gap: 5px; }
+.funnel-stage  { display: flex; align-items: center; gap: 12px; }
+.stage-label   { font-size: 11px; color: var(--text2); width: 130px; text-align: right; flex-shrink: 0; }
+.stage-bar-wrap { flex: 1; position: relative; height: 34px; }
+.stage-bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: var(--radius);
+  display: flex; align-items: center; padding: 0 10px;
+  font-size: 11px; font-weight: 500;
+}
+.stage-pct {
+  font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 500;
+  width: 36px; text-align: right; flex-shrink: 0;
+}
+.risk-badge {
+  font-size: 10px; font-weight: 500;
+  padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
+}
+.risk-high { background: var(--bg-danger); color: var(--text-danger); }
+.risk-med  { background: var(--bg-warning); color: var(--text-warning); }
+.risk-low  { background: var(--bg-success); color: var(--text-success); }
+
+/* ── METRIC CARDS ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.metric-card {
+  background: var(--bg2);
+  border-radius: var(--radius);
+  padding: .85rem .75rem;
+  text-align: center;
+}
+.metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.metric-val   { font-size: 22px; font-weight: 500; line-height: 1.1; }
+.metric-sub   { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.val-red    { color: var(--text-danger); }
+.val-green  { color: var(--text-success); }
+.val-amber  { color: var(--text-warning); }
+
+/* ── CHART CONTAINERS ── */
+.chart-wrap {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.25rem 1rem;
+  margin-top: .75rem;
+}
+.chart-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+.chart-canvas-wrap { position: relative; width: 100%; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── INSIGHTS GRID ── */
+.insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.insight-card {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+.insight-num      { font-size: 11px; font-weight: 500; color: var(--text2); margin-bottom: .4rem; }
+.insight-headline { font-size: 13px; font-weight: 500; line-height: 1.35; margin-bottom: .5rem; }
+.insight-stat     { font-size: 22px; font-weight: 500; margin-bottom: .3rem; }
+.insight-body     { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.insight-stage    {
+  display: inline-block; font-size: 10px;
+  background: var(--bg2); color: var(--text2);
+  padding: 2px 6px; border-radius: 4px; margin-top: .5rem;
+}
+.stat-red   { color: var(--text-danger); }
+.stat-amber { color: var(--text-warning); }
+
+/* ── RCA ── */
+.rca-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: .75rem 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+.rca-row:last-child { border-bottom: none; }
+.rca-rank  { font-size: 11px; font-weight: 500; font-family: 'DM Mono', monospace; color: var(--text2); min-width: 22px; padding-top: 1px; }
+.rca-cause { font-weight: 500; }
+.rca-desc  { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.45; }
+
+/* ── DRIVER TABLE ── */
+.driver-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.driver-table th {
+  font-size: 11px; font-weight: 500; color: var(--text2);
+  text-align: left; padding: .4rem .6rem;
+  border-bottom: 0.5px solid var(--border2);
+}
+.driver-table td {
+  padding: .55rem .6rem; vertical-align: top;
+  border-bottom: 0.5px solid var(--border);
+  line-height: 1.45;
+}
+.driver-table tr:last-child td { border-bottom: none; }
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: 20px;
+}
+.badge-red    { background: var(--bg-danger);  color: var(--text-danger); }
+.badge-amber  { background: var(--bg-warning); color: var(--text-warning); }
+.badge-green  { background: var(--bg-success); color: var(--text-success); }
+
+/* ── RECOMMENDATIONS ── */
+.rec-card {
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  margin-bottom: 10px;
+}
+.rec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .7rem; }
+.rec-name   { font-size: 13px; font-weight: 500; }
+.rec-impact {
+  font-size: 10px; font-weight: 500;
+  padding: 2px 8px; border-radius: 20px;
+}
+.impact-h { background: var(--bg-success); color: var(--text-success); }
+.impact-m { background: var(--bg-warning); color: var(--text-warning); }
+
+.rec-row {
+  display: grid; grid-template-columns: 68px 1fr;
+  gap: 6px; font-size: 12px; line-height: 1.45; margin-bottom: 3px;
+}
+.rec-label { font-weight: 500; color: var(--text2); font-size: 11px; padding-top: 1px; }
+
+/* ── NOT TODO ── */
+.not-todo { display: flex; flex-direction: column; gap: 7px; }
+.not-item { display: flex; align-items: flex-start; gap: 9px; font-size: 12px; color: var(--text2); }
+.not-x {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--bg-danger); color: var(--text-danger);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0; margin-top: 1px;
+}
+
+/* ── EXPERIMENTS TABLE ── */
+.exp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.exp-table th {
+  font-size: 11px; font-weight: 500; color: var(--text2);
+  text-align: left; padding: .4rem .6rem;
+  border-bottom: 0.5px solid var(--border2);
+}
+.exp-table td {
+  padding: .6rem .6rem; vertical-align: top;
+  border-bottom: 0.5px solid var(--border);
+  line-height: 1.45;
+}
+.exp-table tr:last-child td { border-bottom: none; }
+
+/* ── OPEN QUESTIONS ── */
+.oq-list { display: flex; flex-direction: column; gap: 7px; }
+.oq-item {
+  font-size: 12px; color: var(--text2);
+  padding-left: 12px;
+  border-left: 2px solid var(--border2);
+  line-height: 1.5;
+}
+
+/* ── CONCLUSION ── */
+.conclusion {
+  background: var(--bg2); border-radius: var(--radius-lg);
+  padding: 1rem 1.2rem; font-size: 13px; line-height: 1.65;
+  color: var(--text2);
+}
+
+/* ── SEGMENT BAR ROWS ── */
+.seg-section { margin-top: .5rem; }
+.seg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+.seg-label-col { width: 120px; flex-shrink: 0; color: var(--text2); }
+.seg-track { flex: 1; height: 9px; background: var(--bg2); border-radius: 4px; overflow: hidden; }
+.seg-fill  { height: 100%; border-radius: 4px; }
+.seg-val   { width: 28px; text-align: right; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="cs-header">
+    <div class="eyebrow">Product case study — UX / funnel analysis</div>
+    <div class="cs-title">Swiggy Checkout Funnel Optimization</div>
+    <div class="cs-meta">
+      <span>Platform: Swiggy (food delivery)</span>
+      <span>Scope: Cart → Order confirmation</span>
+      <span>Market: India</span>
+    </div>
+  </div>
+
+  <!-- PROBLEM + OBJECTIVE -->
+  <div class="section">
+    <div class="section-label">Problem &amp; objective</div>
+    <div class="objective-box">
+      <strong>Problem:</strong> Swiggy's checkout funnel loses high-intent users to compounding trust failures — fee opacity, address errors, and unhandled mid-flow errors — before they ever reach the payment button.<br><br>
+      <strong>Objective:</strong> Increase Cart → Payment conversion by eliminating the three root causes of abandonment, ranked by revenue impact.
+    </div>
+  </div>
+
+  <!-- FUNNEL DEFINITION -->
+  <div class="section">
+    <div class="section-label">Funnel definition (5 stages)</div>
+    <div class="funnel-stages" id="funnel-bars"></div>
+
+    <!-- CHART 1: FUNNEL WATERFALL -->
+    <div class="chart-wrap" style="margin-top:1.2rem;">
+      <div class="chart-title">Chart 1 — Checkout funnel: conversion waterfall (per 100 users entering cart)</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Users retained</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div>Drop-off at stage</div>
+      </div>
+      <div class="chart-canvas-wrap" style="height:280px;">
+        <canvas id="funnelChart" role="img" aria-label="Funnel waterfall: Cart Review 100, Address 78, Fee Visibility 48, Payment 38, Order Confirmed 31."></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY METRICS -->
+  <div class="section">
+    <div class="section-label">Key metrics</div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">C→P drop (surge fee spike)</div>
+        <div class="metric-val val-red">–49%</div>
+        <div class="metric-sub">on 100% delivery fee hike</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Hard error CVR</div>
+        <div class="metric-val val-red">5%</div>
+        <div class="metric-sub">vs 50% baseline</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">UPI decline rate</div>
+        <div class="metric-val val-green">0.6%</div>
+        <div class="metric-sub">payment rail is fine</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Daily revenue lost</div>
+        <div class="metric-val val-red">₹82.5M</div>
+        <div class="metric-sub">from hard error sessions</div>
+      </div>
+    </div>
+
+    <!-- CHART 2: DROP-OFF BAR -->
+    <div class="chart-wrap">
+      <div class="chart-title">Chart 2 — Drop-off by funnel stage (users lost at each step)</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div>Users dropped</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#D85A30; opacity:.45"></div>High-risk stage</div>
+      </div>
+      <div class="chart-canvas-wrap" style="height:240px;">
+        <canvas id="dropoffChart" role="img" aria-label="Drop-off: Coupons/Address 22, Fee Visibility 30, Payment Selection 10, Order Confirmed 7."></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="section">
+    <div class="section-label">Top 4 high-impact insights</div>
+    <div class="insights-grid">
+
+      <div class="insight-card">
+        <div class="insight-num">01 — Fee visibility stage</div>
+        <div class="insight-headline">Late-stage fee aggregation creates "boiling frog" sticker shock</div>
+        <div class="insight-stat stat-red">₹17.58</div>
+        <div class="insight-body">Platform fee climbed from ₹2, stacked with GST, delivery, and surge. Users anchored to menu price; final bill inflates ₹200 orders to ₹350+.</div>
+        <div class="insight-stage">Cart → Checkout</div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-num">02 — Address selection stage</div>
+        <div class="insight-headline">Silent map API updates snap pins to wrong L8 Geohashes</div>
+        <div class="insight-stat stat-amber">12.75%</div>
+        <div class="insight-body">Backend migrations shift coordinate grids without alerting users. Saved addresses route drivers to adjacent buildings. Increases refunds and support tickets.</div>
+        <div class="insight-stage">Address → Payment</div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-num">03 — Payment initiation stage</div>
+        <div class="insight-headline">Unhandled "restaurant unserviceable" errors act as dead ends</div>
+        <div class="insight-stat stat-red">–90%</div>
+        <div class="insight-body">CVR collapses from 50% to 5% when a hard error modal fires. No recovery path forces a full session restart, destroying sunk-cost momentum.</div>
+        <div class="insight-stage">Cart → Checkout</div>
+      </div>
+
+      <div class="insight-card">
+        <div class="insight-num">04 — Cart review stage</div>
+        <div class="insight-headline">"Basket sneaking" auto-injects Swiggy One, eroding trust early</div>
+        <div class="insight-stat stat-amber">High</div>
+        <div class="insight-body">Subscriptions silently added to carts require active opt-out. Users discovering unexpected items pivot from anticipatory to defensive immediately.</div>
+        <div class="insight-stage">Cart Review</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ROOT CAUSE ANALYSIS -->
+  <div class="section">
+    <div class="section-label">Root cause analysis — ranked by impact</div>
+    <div>
+      <div class="rca-row">
+        <div class="rca-rank">#1</div>
+        <div>
+          <div class="rca-cause">Strategic pricing shift with adversarial UX presentation</div>
+          <div class="rca-desc">Swiggy's growth→profitability pivot raised platform fees incrementally, but the UX hides true cost until the last scroll. The delta between browsing price and checkout price is entirely a design choice — not a product necessity.</div>
+        </div>
+      </div>
+      <div class="rca-row">
+        <div class="rca-rank">#2</div>
+        <div>
+          <div class="rca-cause">Over-reliance on third-party map APIs with no user-side validation</div>
+          <div class="rca-desc">The Address Flagger Model (RoBERTa) detects dissonance but then burdens the user with correcting geospatial coordinates on a tiny mobile interface — cognitively the hardest possible fix. Overload leads to abandonment.</div>
+        </div>
+      </div>
+      <div class="rca-row">
+        <div class="rca-rank">#3</div>
+        <div>
+          <div class="rca-cause">Hyperlocal inventory volatility with no predictive recovery flow</div>
+          <div class="rca-desc">The "restaurant closed" error modal is a dead end. Real-time state changes in hyperlocal logistics are inevitable; the failure is architectural — the product hasn't built a graceful recovery path.</div>
+        </div>
+      </div>
+      <div class="rca-row">
+        <div class="rca-rank">#4</div>
+        <div>
+          <div class="rca-cause">Dark pattern UI inflating subscription metrics at trust's expense</div>
+          <div class="rca-desc">Auto-injection of Swiggy One to the cart is documented deceptive architecture. Short-term subscription boosts come at the cost of long-term session trust and brand equity.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRIVER PRIORITIZATION -->
+  <div class="section">
+    <div class="section-label">Driver prioritization</div>
+    <table class="driver-table">
+      <thead>
+        <tr>
+          <th style="width:4%">Rank</th>
+          <th style="width:36%">Driver</th>
+          <th style="width:16%">Impact</th>
+          <th style="width:20%">Frequency</th>
+          <th style="width:14%">Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-family:'DM Mono',monospace;color:var(--text2);font-size:11px;">#1</td>
+          <td>Late-stage fee opacity</td>
+          <td><span class="badge badge-red">Critical</span></td>
+          <td>All users, every session</td>
+          <td><span class="badge badge-green">High</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'DM Mono',monospace;color:var(--text2);font-size:11px;">#2</td>
+          <td>Geohash / address dissonance</td>
+          <td><span class="badge badge-red">High</span></td>
+          <td>Urban + returning cohort</td>
+          <td><span class="badge badge-green">High</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'DM Mono',monospace;color:var(--text2);font-size:11px;">#3</td>
+          <td>Hard error dead ends</td>
+          <td><span class="badge badge-amber">High</span></td>
+          <td>Peak hours, bad weather</td>
+          <td><span class="badge badge-green">High</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'DM Mono',monospace;color:var(--text2);font-size:11px;">#4</td>
+          <td>Basket sneaking (dark patterns)</td>
+          <td><span class="badge badge-amber">Medium</span></td>
+          <td>All users</td>
+          <td><span class="badge badge-green">High</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SEGMENT COMPARISON -->
+  <div class="section">
+    <div class="section-label">Segment comparison — friction intensity</div>
+
+    <!-- CHART 3: SEGMENT GROUPED BAR -->
+    <div class="chart-wrap">
+      <div class="chart-title">Chart 3 — Friction intensity by segment and type (0 = frictionless, 100 = severe)</div>
+      <div class="legend" id="seg-legend"></div>
+      <div class="chart-canvas-wrap" style="height:260px;">
+        <canvas id="segChart" role="img" aria-label="Grouped bar chart showing cognitive, trust, and technical friction scores for New users, Returning users, UPI users, Card users, and COD users."></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="section">
+    <div class="section-label">Recommendations</div>
+
+    <div class="rec-card">
+      <div class="rec-header">
+        <div class="rec-name">01 — Progressive Price Transparency</div>
+        <span class="rec-impact impact-h">High impact · Low effort</span>
+      </div>
+      <div class="rec-row"><div class="rec-label">Problem</div><div>Users anchor to menu price; ₹350 final bill vs ₹200 expected creates abandonment at the last scroll.</div></div>
+      <div class="rec-row"><div class="rec-label">Insight</div><div>Fee opacity is a design choice. The same fees shown progressively during browsing cause no shock.</div></div>
+      <div class="rec-row"><div class="rec-label">Fix</div><div>Sticky bottom bar on menu page: "Cart: 2 items · Est. total ₹312 (incl. fees)" — updates on each item add.</div></div>
+      <div class="rec-row"><div class="rec-label">Expected</div><div>&gt;4% lift in C→P conversion. Carts may dip slightly but carry higher purchase intent.</div></div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-header">
+        <div class="rec-name">02 — Visual Landmark Anchor Verification</div>
+        <span class="rec-impact impact-h">High impact · Med effort</span>
+      </div>
+      <div class="rec-row"><div class="rec-label">Problem</div><div>Users can't correct Geohash-snapped address pins via a tiny draggable map on mobile.</div></div>
+      <div class="rec-row"><div class="rec-label">Insight</div><div>Visual landmark recognition is 10× faster than abstract spatial mapping for human cognition.</div></div>
+      <div class="rec-row"><div class="rec-label">Fix</div><div>On RoBERTa flag: replace pin-drag UI with "Are you near [Landmark A] or [Landmark B]?" using nearby POI photos.</div></div>
+      <div class="rec-row"><div class="rec-label">Expected</div><div>&gt;10% reduction in location-based refund requests; lower support ticket volume.</div></div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-header">
+        <div class="rec-name">03 — Predictive Cart Porting</div>
+        <span class="rec-impact impact-m">Med impact · High effort</span>
+      </div>
+      <div class="rec-row"><div class="rec-label">Problem</div><div>Hard error modal terminates sessions — CVR drops 90% with no recovery path.</div></div>
+      <div class="rec-row"><div class="rec-label">Insight</div><div>User intent is captured in the cart. Friction is rebuilding it — not choosing a different restaurant.</div></div>
+      <div class="rec-row"><div class="rec-label">Fix</div><div>Suppress error modal; auto-port items to nearest equivalent restaurant with one-tap "Accept Alternate" CTA.</div></div>
+      <div class="rec-row"><div class="rec-label">Expected</div><div>&gt;15% hard error session recovery. Requires tight recommendation accuracy to avoid CSAT drop.</div></div>
+    </div>
+
+    <div class="rec-card">
+      <div class="rec-header">
+        <div class="rec-name">04 — Remove Basket Sneaking</div>
+        <span class="rec-impact impact-h">High trust · Low effort</span>
+      </div>
+      <div class="rec-row"><div class="rec-label">Problem</div><div>Auto-injected Swiggy One subscriptions trigger defensive behavior at step 1 of the funnel.</div></div>
+      <div class="rec-row"><div class="rec-label">Fix</div><div>Audit and remove all cart auto-injection patterns. Replace with explicit opt-in contextual upsells.</div></div>
+      <div class="rec-row"><div class="rec-label">Expected</div><div>Immediate trust recovery. Short-term subscription metric dip; long-term retention improvement.</div></div>
+    </div>
+  </div>
+
+  <!-- WHAT NOT TO PRIORITIZE -->
+  <div class="section">
+    <div class="section-label">What not to prioritize</div>
+    <div class="not-todo">
+      <div class="not-item"><div class="not-x">✕</div><div><strong>Slide-to-Pay adjustments</strong> — intentional friction is working; removing it increases accidental taps, not conversion.</div></div>
+      <div class="not-item"><div class="not-x">✕</div><div><strong>New payment method integrations</strong> — UPI runs at 0.6% decline rate. The bottleneck is upstream.</div></div>
+      <div class="not-item"><div class="not-x">✕</div><div><strong>UPI app-switch crash fixes as P1</strong> — medium confidence; bank server downtime dominates payment failure, not memory leaks.</div></div>
+    </div>
+  </div>
+
+  <!-- EXPERIMENTS -->
+  <div class="section">
+    <div class="section-label">Experiments to run next</div>
+    <table class="exp-table">
+      <thead>
+        <tr>
+          <th style="width:20%">Experiment</th>
+          <th style="width:30%">Control vs Test</th>
+          <th style="width:20%">Primary metric</th>
+          <th style="width:16%">Success bar</th>
+          <th style="width:14%">Risk</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>E1 — Progressive total</strong></td>
+          <td>Fees hidden until cart <em>vs</em> sticky "Est. total" on menu page</td>
+          <td>Cart → Payment CVR</td>
+          <td>&gt;4% relative lift</td>
+          <td style="color:var(--text-warning)">Add-to-cart may dip</td>
+        </tr>
+        <tr>
+          <td><strong>E2 — Landmark anchor</strong></td>
+          <td>Pin-drag map UI <em>vs</em> POI photo selection</td>
+          <td>Location refund rate</td>
+          <td>&gt;10% reduction</td>
+          <td style="color:var(--text-success)">Low — scoped to flagged only</td>
+        </tr>
+        <tr>
+          <td><strong>E3 — Cart porting</strong></td>
+          <td>Dead-end error modal <em>vs</em> auto-ported alternate cart</td>
+          <td>Hard error recovery rate</td>
+          <td>&gt;15%, CSAT neutral</td>
+          <td style="color:var(--text-danger)">High — item mismatch risk</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- OPEN QUESTIONS -->
+  <div class="section">
+    <div class="section-label">Open questions / missing data</div>
+    <div class="oq-list">
+      <div class="oq-item">Conversion delta of single-page checkout vs current multi-step flow — no direct A/B data available.</div>
+      <div class="oq-item">Exact latency (ms) added by surge pricing API calls during cart load — unknown correlation with abandonment.</div>
+      <div class="oq-item">Intent-normalised drop-off data for Slide-to-Pay — needed to fully validate or discard that hypothesis.</div>
+    </div>
+  </div>
+
+  <!-- CONCLUSION -->
+  <div class="section">
+    <div class="section-label">Conclusion</div>
+    <div class="conclusion">
+      Swiggy's checkout abandonment is not a payment problem — it is a <strong>trust and transparency problem</strong> occurring well before the user reaches the pay button. Fee opacity destroys price acceptance, address fragility destroys delivery confidence, and hard error dead-ends destroy session momentum. Fixing these three in order — Progressive Transparency first (highest impact, medium effort), then Landmark Anchor, then Cart Porting — recovers a material portion of the estimated ₹82.5M+ daily revenue lost to checkout abandonment.
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+/* ── FUNNEL STAGE BARS ── */
+const stages = [
+  { label: "Cart review",       pct: 100, risk: "low",  color: "#1D9E75" },
+  { label: "Coupons / address", pct: 78,  risk: "med",  color: "#BA7517" },
+  { label: "Fee visibility",    pct: 48,  risk: "high", color: "#D85A30" },
+  { label: "Payment selection", pct: 38,  risk: "med",  color: "#BA7517" },
+  { label: "Order confirmed",   pct: 31,  risk: "low",  color: "#1D9E75" },
+];
+const funnelEl = document.getElementById('funnel-bars');
+stages.forEach(s => {
+  funnelEl.innerHTML += `
+  <div class="funnel-stage">
+    <div class="stage-label">${s.label}</div>
+    <div class="stage-bar-wrap">
+      <div class="stage-bar" style="width:${s.pct}%;background:${s.color}1a;border:0.5px solid ${s.color}99;">
+        <span style="font-size:11px;font-weight:500;color:${s.color}">${s.pct} users</span>
+      </div>
+    </div>
+    <div class="stage-pct">${s.pct}%</div>
+    <div class="risk-badge risk-${s.risk}">${s.risk}</div>
+  </div>`;
+});
+
+/* ── SHARED CHART OPTIONS ── */
+const gridColor = 'rgba(0,0,0,0.07)';
+const textColor = '#6b6b67';
+const baseFont  = { family: "'DM Sans', system-ui, sans-serif", size: 11 };
+
+/* ── CHART 1: FUNNEL WATERFALL ── */
+const funnelUsers = [100, 78, 48, 38, 31];
+const funnelLabels = ['Cart\nReview', 'Coupons /\nAddress', 'Fee\nVisibility', 'Payment\nSelection', 'Order\nConfirmed'];
+const barColors = ['#1D9E75','#BA7517','#E24B4A','#BA7517','#1D9E75'];
+const barBg     = barColors.map(c => c + '22');
+const barBorder = barColors.map(c => c + 'cc');
+
+new Chart(document.getElementById('funnelChart'), {
+  type: 'bar',
+  data: {
+    labels: funnelLabels,
+    datasets: [{
+      label: 'Users remaining',
+      data: funnelUsers,
+      backgroundColor: barBg,
+      borderColor: barBorder,
+      borderWidth: 1,
+      borderRadius: 5,
+      borderSkipped: false,
+      barPercentage: 0.52,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: i => i[0].label.replace(/\n/g,' '),
+          afterLabel: item => {
+            const idx = item.dataIndex;
+            if (idx === 0) return 'Entry point';
+            const dropped = funnelUsers[idx-1] - funnelUsers[idx];
+            const pct = Math.round((dropped / funnelUsers[idx-1]) * 100);
+            return `Drop: −${dropped} users (${pct}% of previous stage)`;
+          }
+        },
+        backgroundColor: '#fff',
+        borderColor: 'rgba(0,0,0,0.12)',
+        borderWidth: 0.5,
+        titleColor: '#1a1a18',
+        bodyColor: '#6b6b67',
+        padding: 10,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: textColor, font: baseFont, maxRotation: 0, autoSkip: false }
+      },
+      y: {
+        min: 0, max: 115,
+        grid: { color: gridColor },
+        border: { display: false },
+        ticks: { color: textColor, font: baseFont, padding: 6, stepSize: 20 }
+      }
+    },
+    animation: {
+      onComplete() {
+        const chart = this;
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        ctx.save();
+        ctx.font = "500 11px 'DM Sans', system-ui, sans-serif";
+        ctx.textAlign = 'center';
+        meta.data.forEach((bar, i) => {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillText(funnelUsers[i] + ' users', bar.x, bar.y - 7);
+          if (i > 0) {
+            const dropped = funnelUsers[i-1] - funnelUsers[i];
+            const pct = Math.round((dropped / funnelUsers[i-1]) * 100);
+            const midX = (meta.data[i-1].x + bar.x) / 2;
+            const midY = Math.min(meta.data[i-1].y, bar.y) - 18;
+            ctx.fillStyle = '#E24B4A';
+            ctx.font = "500 10px 'DM Sans', system-ui, sans-serif";
+            ctx.fillText(`−${dropped} (${pct}%)`, midX, midY);
+          }
+        });
+        ctx.restore();
+      }
+    }
+  }
+});
+
+/* ── CHART 2: DROP-OFF BAR ── */
+const dropStages  = ['Coupons /\nAddress', 'Fee\nVisibility', 'Payment\nSelection', 'Order\nConfirmed'];
+const dropValues  = [22, 30, 10, 7];
+const dropColors  = ['rgba(186,117,23,0.75)', 'rgba(226,75,74,0.85)', 'rgba(186,117,23,0.55)', 'rgba(29,158,117,0.55)'];
+const dropBorders = ['#BA7517', '#E24B4A', '#BA7517', '#1D9E75'];
+
+new Chart(document.getElementById('dropoffChart'), {
+  type: 'bar',
+  data: {
+    labels: dropStages,
+    datasets: [{
+      label: 'Users dropped',
+      data: dropValues,
+      backgroundColor: dropColors,
+      borderColor: dropBorders,
+      borderWidth: 1,
+      borderRadius: 5,
+      borderSkipped: false,
+      barPercentage: 0.5,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: i => i[0].label.replace(/\n/g,' '),
+          label: item => ` ${item.raw} users dropped at this stage`
+        },
+        backgroundColor: '#fff',
+        borderColor: 'rgba(0,0,0,0.12)',
+        borderWidth: 0.5,
+        titleColor: '#1a1a18',
+        bodyColor: '#6b6b67',
+        padding: 10,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: textColor, font: baseFont, maxRotation: 0, autoSkip: false }
+      },
+      y: {
+        min: 0, max: 40,
+        grid: { color: gridColor },
+        border: { display: false },
+        ticks: { color: textColor, font: baseFont, padding: 6, stepSize: 10,
+          callback: v => v + ' users'
+        }
+      }
+    },
+    animation: {
+      onComplete() {
+        const chart = this;
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        ctx.save();
+        ctx.font = "500 11px 'DM Sans', system-ui, sans-serif";
+        ctx.textAlign = 'center';
+        meta.data.forEach((bar, i) => {
+          ctx.fillStyle = 'rgba(0,0,0,0.65)';
+          ctx.fillText('−' + dropValues[i], bar.x, bar.y - 7);
+        });
+        ctx.restore();
+      }
+    }
+  }
+});
+
+/* ── CHART 3: SEGMENT GROUPED BAR ── */
+const segLabels   = ['New users', 'Returning', 'UPI users', 'Card users', 'COD users'];
+const segCognitive = [40, 35, 10, 30, 18];
+const segTrust     = [28, 22,  8, 20, 12];
+const segTechnical = [14, 11, 10, 22, 15];
+
+const segColors = [
+  { bg: 'rgba(83,74,183,0.75)', border: '#534AB7' },
+  { bg: 'rgba(29,158,117,0.75)', border: '#1D9E75' },
+  { bg: 'rgba(186,117,23,0.75)', border: '#BA7517' },
+];
+
+const legendEl = document.getElementById('seg-legend');
+['Cognitive friction','Trust friction','Technical friction'].forEach((lbl, i) => {
+  legendEl.innerHTML += `<div class="legend-item"><div class="legend-dot" style="background:${segColors[i].border}"></div>${lbl}</div>`;
+});
+
+new Chart(document.getElementById('segChart'), {
+  type: 'bar',
+  data: {
+    labels: segLabels,
+    datasets: [
+      { label: 'Cognitive', data: segCognitive, backgroundColor: segColors[0].bg, borderColor: segColors[0].border, borderWidth: 1, borderRadius: 4, borderSkipped: false },
+      { label: 'Trust',     data: segTrust,     backgroundColor: segColors[1].bg, borderColor: segColors[1].border, borderWidth: 1, borderRadius: 4, borderSkipped: false },
+      { label: 'Technical', data: segTechnical, backgroundColor: segColors[2].bg, borderColor: segColors[2].border, borderWidth: 1, borderRadius: 4, borderSkipped: false },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: item => ` ${item.dataset.label}: ${item.raw}/100`
+        },
+        backgroundColor: '#fff',
+        borderColor: 'rgba(0,0,0,0.12)',
+        borderWidth: 0.5,
+        titleColor: '#1a1a18',
+        bodyColor: '#6b6b67',
+        padding: 10,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { color: textColor, font: baseFont }
+      },
+      y: {
+        min: 0, max: 55,
+        grid: { color: gridColor },
+        border: { display: false },
+        ticks: { color: textColor, font: baseFont, padding: 6, stepSize: 10,
+          callback: v => v
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
