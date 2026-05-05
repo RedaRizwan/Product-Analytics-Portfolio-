@@ -43,4 +43,10 @@ Skills Demonstrated
 - Hypothesis Testing
 - User Behavior Analysis
 
-[View Full Case Study](./swiggy_notion_case_study.html)
+[View Full Case Study](./index.html)
+
+Tools
+Figma
+user reaseach
+funnel analysis
+
